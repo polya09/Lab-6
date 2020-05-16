@@ -82,8 +82,8 @@ void MiddleLevel3() {
 
 int main() 
 {
-	SetConsoleCP(1251); 
-	SetConsoleOutputCP(1251);
+	//SetConsoleCP(1251); 
+	//SetConsoleOutputCP(1251);
 
 	MiddleLevel1();
 	MiddleLevel2();
