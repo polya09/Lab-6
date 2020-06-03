@@ -1,6 +1,20 @@
-﻿
-#include"Header.h"
+﻿#include <iostream>
+#include <fstream>
+#include <string>
+#include <algorithm>
+#include <Windows.h> 
+#include <sys/types.h>
+#include <fcntl.h> 
 
+
+using namespace std;
+struct Data {
+	string Name;
+	double CPU_frequency;
+	double RAM_size;
+	double HardDriveCapacity;
+	double Price;
+};
 void MiddleLevel1() {
 	/* Создать бинарный файл с информацией о наличии компьютеров для продажи:
 	   - название компьютера;
@@ -40,7 +54,7 @@ void MiddleLevel1() {
 		cout << restoredDB[i].Name << "\t" << restoredDB[i].CPU_frequency << "\t" << restoredDB[i].RAM_size << "\t" << restoredDB[i].HardDriveCapacity << "\t" << restoredDB[i].Price << endl;
 		sum += data[i].Price;
 	}
-	cout << "Общая стоимость компьютеров Asus с частотой процессора более 2Ггц: " << sum << endl;
+	cout << "Общая стоимость компьютеров Asus с частотой процессора более 2Ггц: " << sum <<  endl;
 	system("pause");
 	system("cls");
 }
@@ -63,6 +77,55 @@ void MiddleLevel2() {
 	cout << cstrin << endl;
 }
 
+struct Client
+{
+	string name;
+	float monthCost;
+	int monthsPaidTotal;
+	int nextMonthsPaid;
+
+	void calc()
+	{
+		nextMonthsPaid = monthsPaidTotal - 1;
+	}
+
+	void writeToFile(const char* path)
+	{
+		ofstream stream(path, ios::binary);
+		int nameLength = name.length() + 1;
+
+		stream.write((char*)&nameLength, sizeof(int));
+		stream.write((char*)name.c_str(), nameLength);
+		stream.write((char*)&monthCost, sizeof(float));
+		stream.write((char*)&monthsPaidTotal, sizeof(int));
+		stream.write((char*)&nextMonthsPaid, sizeof(int));
+
+		stream.close();
+	}
+
+	void readFromFile(const char* path)
+	{
+		ifstream stream(path, ios::binary);
+		int nameLength;
+		stream.read((char*)&nameLength, sizeof(int));
+		char* buffer = new char[nameLength];
+		stream.read(buffer, nameLength);
+		name = buffer;
+		delete[]buffer;
+		stream.read((char*)&monthCost, sizeof(float));
+		stream.read((char*)&monthsPaidTotal, sizeof(int));
+		stream.read((char*)&nextMonthsPaid, sizeof(int));
+		stream.close();
+	}
+
+	void printInfo()
+	{
+		cout << "Name: " << name;
+		cout << "\nMonth Cost: " << monthCost;
+		cout << "\nMonths Paid: " << monthsPaidTotal;
+		cout << "\nNext Months Paid: " << nextMonthsPaid << "\n";
+	}
+};
 void MiddleLevel3() {
 	/*Создать бинарный файл, компонентами которого является структура, содержащая следующие поля :
 	- Фамилия и инициалы клиентов кабельной сети;
@@ -72,22 +135,47 @@ void MiddleLevel3() {
 	Переписать бинарный файл так, чтобы стоимость услуг кабельной сети была бы снижена на 5 %, 
 	если клиент хочет оплатил вперед более чем за 3 месяца*/
 	
-	DataEntry();
-	string fileName = "Middle3.bin" ;
-	DataReading(fileName);
-	Print();
-	DataChache();
+	const char* PATH = "D:\\MiddleLevel3";
+
+	Client client;
+
+	client.name = "Alina Ivanova";
+	client.monthCost = (rand() % 100) + 90;
+	client.monthsPaidTotal = (rand() % 6) + 1;
+	client.calc();
+
+	cout << "Writing to file this info:\n\n";
+
+	client.printInfo();
+
+	client.writeToFile(PATH);
+
+	Client fromFile;
+
+	fromFile.readFromFile(PATH);
+
+	if (fromFile.nextMonthsPaid > 3)
+	{
+		fromFile.monthCost -= (fromFile.monthCost / 100) * 5;
+
+		fromFile.writeToFile(PATH);
+
+		fromFile.readFromFile(PATH);
+	}
+
+	cout << "\nInfo from file (if next months paid > 3, subtract 5% from cost):\n\n";
+
+	fromFile.printInfo();
 }
 
 
 int main() 
 {
-	//SetConsoleCP(1251); 
-	//SetConsoleOutputCP(1251);
+	SetConsoleCP(1251); 
+	SetConsoleOutputCP(1251);
 
 	MiddleLevel1();
 	MiddleLevel2();
 	MiddleLevel3();
-	
 	return 0;
 }
